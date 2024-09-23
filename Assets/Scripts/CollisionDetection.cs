@@ -12,8 +12,7 @@ public class CollisionDetection: MonoBehaviour
     {
         if (other.CompareTag("Orb"))
         {
-            // ゲージを増やす
-            attributeSwitcher.AddGauge(orbValue);
+            attributeSwitcher.currentGauge = Mathf.Min(attributeSwitcher.currentGauge + 20, attributeSwitcher.maxGauge); // オーブを取るとゲージが20増加
 
             // オーブを消去
             Destroy(other.gameObject);

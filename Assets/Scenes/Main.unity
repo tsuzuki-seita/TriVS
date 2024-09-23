@@ -562,7 +562,7 @@ GameObject:
   - component: {fileID: 477032107}
   - component: {fileID: 477032108}
   m_Layer: 5
-  m_Name: EnegyBar
+  m_Name: GaugeBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1200,6 +1200,11 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1894804823 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7216567599370781045, guid: a4531e7ed719548438109142ae642b74, type: 3}
+  m_PrefabInstance: {fileID: 21404417}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2021772259
 GameObject:
   m_ObjectHideFlags: 0
@@ -1293,18 +1298,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  rotateSpeed: 10
+  rotateSpeed: 3
   attackRange: 2
-  maxHP: 100
-  currentHP: 0
   attackPrefab: {fileID: 0}
   attackSpawnPoint: {fileID: 0}
   attributeSwitcher: {fileID: 2124393751}
   attackCooldown: 1
   maxGauge: 50
-  currentGauge: 50
   gaugeCost: 10
-  gaugeRegenerationRate: 3
+  attackPrefab01: {fileID: 0}
+  attackPrefab02: {fileID: 0}
+  attackPrefab03: {fileID: 0}
 --- !u!114 &2124393750
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1333,12 +1337,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentAttribute: 0
   switchCost: 10
-  currentGauge: 100
+  currentGauge: 0
   maxGauge: 100
+  gaugeRegenerationRate: 3
   fireObject: {fileID: 453022984}
   waterObject: {fileID: 764343860}
-  lightningObject: {fileID: 0}
-  playerController: {fileID: 0}
+  lightningObject: {fileID: 1894804823}
+  playerController: {fileID: 2124393749}
+  maxHP: 100
+  currentHP: 100
+  hpBar: {fileID: 135458068}
+  gaugeBar: {fileID: 477032108}
 --- !u!54 &2124393752
 Rigidbody:
   m_ObjectHideFlags: 0

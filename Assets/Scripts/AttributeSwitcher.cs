@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AttributeSwitcher : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class AttributeSwitcher : MonoBehaviour
     public int switchCost = 10; // 切り替えに必要なゲージ量
     public int currentGauge = 0;
     public int maxGauge = 100;
+    public float gaugeRegenerationRate = 3f; // 秒間のゲージ増加量
 
     public GameObject fireObject;  // Fire属性のオブジェクト
     public GameObject waterObject; // Water属性のオブジェクト
@@ -17,10 +19,21 @@ public class AttributeSwitcher : MonoBehaviour
 
     public PlayerController playerController;
 
+    public int maxHP = 100;
+    public int currentHP;
+
+    public Slider hpBar;
+    public Slider gaugeBar;
+
     private void Start()
     {
         currentAttribute = Attribute.Fire; // 初期属性  
         UpdateAttributeVisibility();
+        hpBar.value = maxHP;
+        UpdateHpUI();
+        gaugeBar.value = 0;
+        UpdateGaugeUI();
+        StartCoroutine(RegenerateGauge());
     }
 
     // 属性を切り替える
@@ -29,6 +42,7 @@ public class AttributeSwitcher : MonoBehaviour
         if (currentGauge >= switchCost)
         {
             currentGauge -= switchCost;
+            gaugeBar.value = currentGauge / maxGauge;
             switch (currentAttribute)
             {
                 case Attribute.Fire:
@@ -54,6 +68,8 @@ public class AttributeSwitcher : MonoBehaviour
     public void AddGauge(int amount)
     {
         currentGauge = Mathf.Min(currentGauge + amount, maxGauge);
+        gaugeBar.value = currentGauge / maxGauge;
+        UpdateGaugeUI();
         Debug.Log("Gauge: " + currentGauge);
     }
 
@@ -108,6 +124,32 @@ public class AttributeSwitcher : MonoBehaviour
         }
 
         Debug.Log("Damage taken: " + finalDamage);
-        playerController.TakeDamage(finalDamage);
+        currentHP -= finalDamage;
+        UpdateHpUI();
+        if (currentHP <= 0)
+        {
+            // ゲームオーバー処理
+            Debug.Log("Player is dead!");
+        }
+    }
+
+    public void UpdateHpUI()
+    {
+        hpBar.value = (float)currentHP / (float)maxHP;
+    }
+
+    public void UpdateGaugeUI()
+    {
+        gaugeBar.value = (float)currentGauge / (float)maxGauge;
+    }
+
+    private IEnumerator RegenerateGauge()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(1f); // 1秒ごとにゲージを増加
+            currentGauge = Mathf.Min(currentGauge + (int)gaugeRegenerationRate, maxGauge);
+            UpdateGaugeUI();
+        }
     }
 }

@@ -4,11 +4,9 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 5f;
-    public float rotateSpeed = 10f;
+    public float moveSpeed;
+    public float rotateSpeed;
     public float attackRange = 2f;
-    public int maxHP = 100;
-    public int currentHP;
     public GameObject attackPrefab; // 攻撃のプレハブ
     public Transform attackSpawnPoint;
     public AttributeSwitcher attributeSwitcher; // 属性スイッチャー
@@ -16,59 +14,87 @@ public class PlayerController : MonoBehaviour
     private float lastAttackTime = 0;
 
     public int maxGauge = 50;
-    public int currentGauge = 50;
+    int currentGauge;
     public int gaugeCost = 10; // 属性切り替えと攻撃に消費するゲージ量
-    public float gaugeRegenerationRate = 3f; // 秒間のゲージ増加量
 
     private Animator animator;
     private bool isAttacking = false;
+    private bool isDefence = false;
     private int comboStep = 0; // 0: Attack01, 1: Attack02, 2: Attack03
+    // 攻撃ごとに異なるプレハブ
+    public GameObject attackPrefab01; // Attack01 用のプレハブ
+    public GameObject attackPrefab02; // Attack02 用のプレハブ
+    public GameObject attackPrefab03; // Attack03 用のプレハブ
+
 
     private void Start()
     {
-        currentHP = maxHP;
         animator = GetComponent<Animator>();
-        StartCoroutine(RegenerateGauge());
     }
 
     private void Update()
     {
-        if (!isAttacking && currentGauge >= gaugeCost) // 攻撃中は移動できない
+        if (!isAttacking && !isDefence) // 攻撃中は移動できない
         {
             Move();
         }
 
-        if (Input.GetMouseButtonDown(0) && Time.time - lastAttackTime > attackCooldown && currentGauge >= gaugeCost)
+        if (Input.GetMouseButtonDown(0) && Time.time - lastAttackTime > attackCooldown && attributeSwitcher.currentGauge >= gaugeCost)
         {
             Attack();
         }
 
-        if (Input.GetKeyDown(KeyCode.Q) && currentGauge >= gaugeCost)
+        if (Input.GetKeyDown(KeyCode.Space) && attributeSwitcher.currentGauge >= gaugeCost)
         {
             attributeSwitcher.SwitchAttribute();
-            currentGauge -= gaugeCost; // 属性切り替え時にゲージを消費
-            UpdateGaugeUI();
+            attributeSwitcher.currentGauge -= gaugeCost; // 属性切り替え時にゲージを消費
+            attributeSwitcher.UpdateGaugeUI();
         }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            isDefence = true;
+            animator.SetBool("IsDefence", true);
+        }
+        if (Input.GetMouseButtonUp(1))
+        {
+            isDefence = false;
+            animator.SetBool("IsDefence", false);
+        }
+
     }
 
     private void Move()
     {
-        float moveX = Input.GetAxis("Horizontal");
-        float moveZ = Input.GetAxis("Vertical");
-        Vector3 moveDirection = new Vector3(moveX, 0, moveZ).normalized;
-        transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.World);
+        //x軸方向、z軸方向の入力を取得
+        //Horizontal、水平、横方向のイメージ
+        float _input_x = Input.GetAxis("Horizontal");
+        //Vertical、垂直、縦方向のイメージ
+        float _input_z = Input.GetAxis("Vertical");
 
-        //進む方向に滑らかに向く。
-        transform.forward = Vector3.Slerp(transform.forward, moveDirection, Time.deltaTime * rotateSpeed);
+        //移動の向きなど座標関連はVector3で扱う
+        Vector3 velocity = new Vector3(_input_x, 0, _input_z);
+        //ベクトルの向きを取得
+        Vector3 direction = velocity.normalized;
+
+        //移動距離を計算
+        float distance = moveSpeed * Time.deltaTime;
+        //移動先を計算
+        Vector3 destination = transform.position + direction * distance;
+
+        //移動先に向けて回転
+        transform.LookAt(destination);
+        //移動先の座標を設定
+        transform.position = destination;
 
         // 移動アニメーションの制御
-        if (moveDirection != Vector3.zero)
+        if (velocity != Vector3.zero)
         {
-            animator.SetBool("isWalking", true);
+            animator.SetBool("IsWalking", true);
         }
         else
         {
-            animator.SetBool("isWalking", false);
+            animator.SetBool("IsWalking", false);
         }
     }
 
@@ -76,27 +102,61 @@ public class PlayerController : MonoBehaviour
     {
         lastAttackTime = Time.time;
         isAttacking = true;
-        currentGauge -= gaugeCost; // 攻撃時にゲージを消費
-        UpdateGaugeUI();
+        attributeSwitcher.currentGauge -= gaugeCost; // 攻撃時にゲージを消費
+        attributeSwitcher.UpdateGaugeUI();
 
         if (comboStep == 0)
         {
             animator.SetTrigger("Attack01");
+            Invoke(nameof(SpawnProjectile01), 0.5f); // Attack01 用のプロジェクタイル生成
         }
         else if (comboStep == 1)
         {
             animator.SetTrigger("Attack02");
+            Invoke(nameof(SpawnProjectile02), 0.5f); // Attack02 用のプロジェクタイル生成
         }
         else if (comboStep == 2)
         {
             animator.SetTrigger("Attack03");
+            Invoke(nameof(SpawnProjectile03), 0.5f); // Attack03 用のプロジェクタイル生成
         }
 
         comboStep = (comboStep + 1) % 3; // 次のコンボステップへ
-        Invoke(nameof(SpawnProjectile), 0.5f); // プロジェクタイルを生成
     }
 
-    private void SpawnProjectile()
+    private void SpawnProjectile01()
+    {
+        GameObject projectile = Instantiate(attackPrefab01, attackSpawnPoint.position, Quaternion.identity);
+        SetProjectileAttribute(projectile, 10);
+        isAttacking = false;
+    }
+
+    private void SpawnProjectile02()
+    {
+        GameObject projectile = Instantiate(attackPrefab02, attackSpawnPoint.position, Quaternion.identity);
+        SetProjectileAttribute(projectile, 20);
+        isAttacking = false;
+    }
+
+    private void SpawnProjectile03()
+    {
+        GameObject projectile = Instantiate(attackPrefab03, attackSpawnPoint.position, Quaternion.identity);
+        SetProjectileAttribute(projectile, 30);
+        isAttacking = false;
+    }
+
+    private void SetProjectileAttribute(GameObject projectile ,int damage)
+    {
+        // Projectile に属性情報をセット
+        Projectile projectileScript = projectile.GetComponent<Projectile>();
+        if (projectileScript != null)
+        {
+            projectileScript.sourceAttribute = attributeSwitcher.currentAttribute; // 現在の属性をセット
+            projectileScript.damage = damage; // ダメージ値（ここはお好みで調整）
+        }
+    }
+
+    private void SpawnProjectile(GameObject attackPrefab)
     {
         GameObject projectile = Instantiate(attackPrefab, attackSpawnPoint.position, Quaternion.identity);
 
@@ -109,37 +169,5 @@ public class PlayerController : MonoBehaviour
         }
 
         isAttacking = false;
-    }
-
-    public void TakeDamage(int damage)
-    {
-        currentHP -= damage;
-        if (currentHP <= 0)
-        {
-            // ゲームオーバー処理
-            Debug.Log("Player is dead!");
-        }
-    }
-
-    public void CollectOrb()
-    {
-        currentGauge = Mathf.Min(currentGauge + 20, maxGauge); // オーブを取るとゲージが20増加
-        UpdateGaugeUI();
-    }
-
-    private IEnumerator RegenerateGauge()
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(1f); // 1秒ごとにゲージを増加
-            currentGauge = Mathf.Min(currentGauge + (int)gaugeRegenerationRate, maxGauge);
-            UpdateGaugeUI();
-        }
-    }
-
-    private void UpdateGaugeUI()
-    {
-        // ゲージのUI更新処理（ここはあなたのプロジェクトに応じて実装）
-        Debug.Log("Gauge: " + currentGauge);
     }
 }
