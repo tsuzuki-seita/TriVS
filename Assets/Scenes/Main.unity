@@ -901,11 +901,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 926345774}
   m_CullTransparentMesh: 1
---- !u!1 &969688136 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7216567599370781045, guid: a4531e7ed719548438109142ae642b74, type: 3}
-  m_PrefabInstance: {fileID: 21404417}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1363895201
 GameObject:
   m_ObjectHideFlags: 0
@@ -1298,12 +1293,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
+  rotateSpeed: 10
+  attackRange: 2
   maxHP: 100
   currentHP: 0
   attackPrefab: {fileID: 0}
   attackSpawnPoint: {fileID: 0}
   attributeSwitcher: {fileID: 2124393751}
   attackCooldown: 1
+  maxGauge: 50
+  currentGauge: 50
+  gaugeCost: 10
+  gaugeRegenerationRate: 3
 --- !u!114 &2124393750
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1336,7 +1337,8 @@ MonoBehaviour:
   maxGauge: 100
   fireObject: {fileID: 453022984}
   waterObject: {fileID: 764343860}
-  grassObject: {fileID: 969688136}
+  lightningObject: {fileID: 0}
+  playerController: {fileID: 0}
 --- !u!54 &2124393752
 Rigidbody:
   m_ObjectHideFlags: 0

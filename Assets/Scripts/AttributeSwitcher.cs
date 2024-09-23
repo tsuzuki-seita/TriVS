@@ -1,20 +1,25 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AttributeSwitcher : MonoBehaviour
 {
-    public enum Attribute { Fire, Water, Grass }
+    public enum Attribute { Fire, Water, Lightning }
     public Attribute currentAttribute;
+
     public int switchCost = 10; // 切り替えに必要なゲージ量
     public int currentGauge = 0;
     public int maxGauge = 100;
 
     public GameObject fireObject;  // Fire属性のオブジェクト
     public GameObject waterObject; // Water属性のオブジェクト
-    public GameObject grassObject; // Grass属性のオブジェクト
+    public GameObject lightningObject; // Grass属性のオブジェクト
+
+    public PlayerController playerController;
 
     private void Start()
     {
-        currentAttribute = Attribute.Fire; // 初期属性
+        currentAttribute = Attribute.Fire; // 初期属性  
         UpdateAttributeVisibility();
     }
 
@@ -30,9 +35,9 @@ public class AttributeSwitcher : MonoBehaviour
                     currentAttribute = Attribute.Water;
                     break;
                 case Attribute.Water:
-                    currentAttribute = Attribute.Grass;
+                    currentAttribute = Attribute.Lightning;
                     break;
-                case Attribute.Grass:
+                case Attribute. Lightning:
                     currentAttribute = Attribute.Fire;
                     break;
             }
@@ -58,6 +63,51 @@ public class AttributeSwitcher : MonoBehaviour
         // Fire, Water, Grassのオブジェクトを切り替え
         fireObject.SetActive(currentAttribute == Attribute.Fire);
         waterObject.SetActive(currentAttribute == Attribute.Water);
-        grassObject.SetActive(currentAttribute == Attribute.Grass);
+        lightningObject.SetActive(currentAttribute == Attribute.Lightning);
+    }
+
+    // ダメージ計算処理
+    public void TakeDamage(int baseDamage, Attribute sourceAttribute)
+    {
+        int finalDamage = baseDamage;
+
+        switch (currentAttribute)
+        {
+            case Attribute.Fire:
+                if (sourceAttribute == Attribute.Water)
+                {
+                    finalDamage = baseDamage * 2; // Waterからの攻撃なら2倍ダメージ
+                }
+                else if (sourceAttribute == Attribute.Lightning)
+                {
+                    finalDamage = baseDamage / 2; // Lightningからの攻撃なら半減ダメージ
+                }
+                break;
+
+            case Attribute.Water:
+                if (sourceAttribute == Attribute.Fire)
+                {
+                    finalDamage = baseDamage / 2; // Fireからの攻撃なら半減ダメージ
+                }
+                else if (sourceAttribute == Attribute.Lightning)
+                {
+                    finalDamage = baseDamage * 2; // Lightningからの攻撃なら2倍ダメージ
+                }
+                break;
+
+            case Attribute.Lightning:
+                if (sourceAttribute == Attribute.Water)
+                {
+                    finalDamage = baseDamage / 2; // Waterからの攻撃なら半減ダメージ
+                }
+                else if (sourceAttribute == Attribute.Fire)
+                {
+                    finalDamage = baseDamage * 2; // Fireからの攻撃なら2倍ダメージ
+                }
+                break;
+        }
+
+        Debug.Log("Damage taken: " + finalDamage);
+        playerController.TakeDamage(finalDamage);
     }
 }
