@@ -17,7 +17,7 @@ public class CollisionDetection: MonoBehaviour
             // オーブを消去
             Destroy(other.gameObject);
         }
-        else if (other.CompareTag("Projectile")) // 衝突したオブジェクトが攻撃（Projectile）の場合
+        else if (other.CompareTag("EProjectile")) // 衝突したオブジェクトが攻撃（Projectile）の場合
         {
             // 攻撃元の属性情報を取得
             Projectile projectile = other.GetComponent<Projectile>();

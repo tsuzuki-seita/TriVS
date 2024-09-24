@@ -7,7 +7,6 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed;
     public float rotateSpeed;
     public float attackRange = 2f;
-    public GameObject attackPrefab; // 攻撃のプレハブ
     public Transform attackSpawnPoint;
     public AttributeSwitcher attributeSwitcher; // 属性スイッチャー
     public float attackCooldown = 1f;
@@ -17,24 +16,26 @@ public class PlayerController : MonoBehaviour
     int currentGauge;
     public int gaugeCost = 10; // 属性切り替えと攻撃に消費するゲージ量
 
-    private Animator animator;
+    public Animator animator;
     private bool isAttacking = false;
     private bool isDefence = false;
+    public bool isStun = false;
     private int comboStep = 0; // 0: Attack01, 1: Attack02, 2: Attack03
     // 攻撃ごとに異なるプレハブ
     public GameObject attackPrefab01; // Attack01 用のプレハブ
     public GameObject attackPrefab02; // Attack02 用のプレハブ
-    public GameObject attackPrefab03; // Attack03 用のプレハブ
 
+    public GameObject Defence;
 
     private void Start()
     {
         animator = GetComponent<Animator>();
+        Defence.SetActive(false);
     }
 
     private void Update()
     {
-        if (!isAttacking && !isDefence) // 攻撃中は移動できない
+        if (!isAttacking && !isDefence && !isStun) // 攻撃中は移動できない
         {
             Move();
         }
@@ -55,11 +56,13 @@ public class PlayerController : MonoBehaviour
         {
             isDefence = true;
             animator.SetBool("IsDefence", true);
+            Defence.SetActive(true);
         }
         if (Input.GetMouseButtonUp(1))
         {
             isDefence = false;
             animator.SetBool("IsDefence", false);
+            Defence.SetActive(false);
         }
 
     }
@@ -108,17 +111,17 @@ public class PlayerController : MonoBehaviour
         if (comboStep == 0)
         {
             animator.SetTrigger("Attack01");
-            Invoke(nameof(SpawnProjectile01), 0.5f); // Attack01 用のプロジェクタイル生成
+            SpawnProjectile01();
         }
         else if (comboStep == 1)
         {
             animator.SetTrigger("Attack02");
-            Invoke(nameof(SpawnProjectile02), 0.5f); // Attack02 用のプロジェクタイル生成
+            SpawnProjectile02();
         }
         else if (comboStep == 2)
         {
             animator.SetTrigger("Attack03");
-            Invoke(nameof(SpawnProjectile03), 0.5f); // Attack03 用のプロジェクタイル生成
+            SpawnProjectile03();
         }
 
         comboStep = (comboStep + 1) % 3; // 次のコンボステップへ
@@ -140,7 +143,7 @@ public class PlayerController : MonoBehaviour
 
     private void SpawnProjectile03()
     {
-        GameObject projectile = Instantiate(attackPrefab03, attackSpawnPoint.position, Quaternion.identity);
+        GameObject projectile = Instantiate(attackPrefab01, attackSpawnPoint.position, Quaternion.identity);
         SetProjectileAttribute(projectile, 30);
         isAttacking = false;
     }
@@ -154,20 +157,5 @@ public class PlayerController : MonoBehaviour
             projectileScript.sourceAttribute = attributeSwitcher.currentAttribute; // 現在の属性をセット
             projectileScript.damage = damage; // ダメージ値（ここはお好みで調整）
         }
-    }
-
-    private void SpawnProjectile(GameObject attackPrefab)
-    {
-        GameObject projectile = Instantiate(attackPrefab, attackSpawnPoint.position, Quaternion.identity);
-
-        // Projectile に属性情報をセット
-        Projectile projectileScript = projectile.GetComponent<Projectile>();
-        if (projectileScript != null)
-        {
-            projectileScript.sourceAttribute = attributeSwitcher.currentAttribute; // 現在の属性をセット
-            projectileScript.damage = 10; // ダメージ値（ここはお好みで調整）
-        }
-
-        isAttacking = false;
     }
 }
