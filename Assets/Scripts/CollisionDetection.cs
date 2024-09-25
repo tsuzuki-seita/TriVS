@@ -7,6 +7,7 @@ public class CollisionDetection: MonoBehaviour
 {
     public int orbValue = 20; // オーブ1つ当たりのゲージ増加量
     public AttributeSwitcher attributeSwitcher;
+    public PlayerController playerController;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -19,6 +20,7 @@ public class CollisionDetection: MonoBehaviour
         }
         else if (other.CompareTag("EProjectile")) // 衝突したオブジェクトが攻撃（Projectile）の場合
         {
+            playerController.animator.SetTrigger("Damage");
             // 攻撃元の属性情報を取得
             Projectile projectile = other.GetComponent<Projectile>();
             if (projectile != null)
