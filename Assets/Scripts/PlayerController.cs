@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     public float attackRange = 2f;
     public Transform attackSpawnPoint;
     public AttributeSwitcher attributeSwitcher; // 属性スイッチャー
-    public float attackCooldown = 1f;
+    public float attackCooldown = 0.5f;
     private float lastAttackTime = 0;
 
     public int maxGauge = 50;
@@ -26,6 +26,8 @@ public class PlayerController : MonoBehaviour
     public GameObject attackPrefab02; // Attack02 用のプレハブ
 
     public GameObject Defence;
+    float _input_x;
+    float _input_z;
 
     private void Start()
     {
@@ -38,6 +40,11 @@ public class PlayerController : MonoBehaviour
         if (!isAttacking && !isDefence && !isStun) // 攻撃中は移動できない
         {
             Move();
+        }
+        else
+        {
+            _input_x = 0;
+            _input_z = 0;
         }
 
         if (Input.GetMouseButtonDown(0) && Time.time - lastAttackTime > attackCooldown && attributeSwitcher.currentGauge >= gaugeCost)
@@ -71,9 +78,9 @@ public class PlayerController : MonoBehaviour
     {
         //x軸方向、z軸方向の入力を取得
         //Horizontal、水平、横方向のイメージ
-        float _input_x = Input.GetAxis("Horizontal");
+        _input_x = Input.GetAxis("Horizontal");
         //Vertical、垂直、縦方向のイメージ
-        float _input_z = Input.GetAxis("Vertical");
+        _input_z = Input.GetAxis("Vertical");
 
         //移動の向きなど座標関連はVector3で扱う
         Vector3 velocity = new Vector3(_input_x, 0, _input_z);
@@ -103,6 +110,8 @@ public class PlayerController : MonoBehaviour
 
     private void Attack()
     {
+        _input_x = 0;
+        _input_z = 0;
         lastAttackTime = Time.time;
         isAttacking = true;
         attributeSwitcher.currentGauge -= gaugeCost; // 攻撃時にゲージを消費
@@ -125,27 +134,33 @@ public class PlayerController : MonoBehaviour
         }
 
         comboStep = (comboStep + 1) % 3; // 次のコンボステップへ
+        Invoke("RemoveAttacking", 0.5f);
+    }
+
+    void RemoveAttacking()
+    {
+        isAttacking = false;
     }
 
     private void SpawnProjectile01()
     {
         GameObject projectile = Instantiate(attackPrefab01, attackSpawnPoint.position, Quaternion.identity);
         SetProjectileAttribute(projectile, 10);
-        isAttacking = false;
+        
     }
 
     private void SpawnProjectile02()
     {
         GameObject projectile = Instantiate(attackPrefab02, attackSpawnPoint.position, Quaternion.identity);
         SetProjectileAttribute(projectile, 20);
-        isAttacking = false;
+        
     }
 
     private void SpawnProjectile03()
     {
         GameObject projectile = Instantiate(attackPrefab01, attackSpawnPoint.position, Quaternion.identity);
         SetProjectileAttribute(projectile, 30);
-        isAttacking = false;
+        
     }
 
     private void SetProjectileAttribute(GameObject projectile ,int damage)

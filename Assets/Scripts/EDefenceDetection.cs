@@ -2,14 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DefenceDetection : MonoBehaviour
+public class EDefenceDetection : MonoBehaviour
 {
     public AttributeSwitcher attributeSwitcher;
     public PlayerController playerController;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("EProjectile")) // 衝突したオブジェクトが攻撃（Projectile）の場合
+        if (other.CompareTag("Projectile")) // 衝突したオブジェクトが攻撃（Projectile）の場合
         {
             playerController.animator.SetTrigger("Damage");
 

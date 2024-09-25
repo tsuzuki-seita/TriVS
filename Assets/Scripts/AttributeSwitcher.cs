@@ -123,6 +123,7 @@ public class AttributeSwitcher : MonoBehaviour
                 break;
         }
 
+        playerController.animator.SetTrigger("Damage");
         Debug.Log("Damage taken: " + finalDamage);
         currentHP -= finalDamage;
         UpdateHpUI();
