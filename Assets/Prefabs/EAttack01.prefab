@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8393038723432598358}
   - component: {fileID: 5525172025029126457}
-  - component: {fileID: 5050115389138233439}
+  - component: {fileID: 2194961225131129552}
   m_Layer: 0
   m_Name: EAttack01
   m_TagString: EProjectile
@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.0204742, y: 0.555, z: 0.3791522}
-  m_LocalScale: {x: 1, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 1.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -54,7 +54,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &5050115389138233439
+--- !u!114 &2194961225131129552
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

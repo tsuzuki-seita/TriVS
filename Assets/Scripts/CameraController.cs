@@ -4,34 +4,29 @@ using UnityEngine;
 
 public class CameraControll : MonoBehaviour
 {
+    // プレイヤーオブジェクト（Inspectorでアタッチ可能にする）
+    public Transform playerTransform;
 
-    private GameObject mainCamera;              //メインカメラ格納用
-    public GameObject playerObject;            //回転の中心となるプレイヤー格納用
-    public float rotateSpeed = 2.0f;            //回転の速さ
+    // カメラとプレイヤーの相対的な位置
+    private Vector3 offset;
+    private Quaternion defolt;
 
-    //呼び出し時に実行される関数
-    void Start()
+    // カメラがプレイヤーと常に一定の距離を保つように初期設定
+    private void Start()
     {
-        //メインカメラとユニティちゃんをそれぞれ取得
-        mainCamera = Camera.main.gameObject;
+        // カメラとプレイヤーの相対的な位置を計算
+        offset = transform.position - playerTransform.position;
+        defolt = this.transform.rotation;
     }
 
-
-    //単位時間ごとに実行される関数
-    void Update()
+    // 毎フレームごとにカメラの位置を更新
+    private void LateUpdate()
     {
-        //rotateCameraの呼び出し
-        rotateCamera();
-    }
+        // プレイヤーの現在位置に対して相対的な位置を維持
+        transform.position = playerTransform.position + offset;
 
-    //カメラを回転させる関数
-    private void rotateCamera()
-    {
-        //Vector3でX,Y方向の回転の度合いを定義
-        Vector3 angle = new Vector3(Input.GetAxis("Mouse X") * rotateSpeed, Input.GetAxis("Mouse Y") * rotateSpeed * (-1), 0);
-
-        //transform.RotateAround()をしようしてメインカメラを回転させる
-        mainCamera.transform.RotateAround(playerObject.transform.position, Vector3.up, angle.x);
-        mainCamera.transform.RotateAround(playerObject.transform.position, transform.right, angle.y);
+        // プレイヤーが回転してもカメラは回転しないようにする
+        // カメラの回転は固定されており、プレイヤーの回転に影響されない
+        transform.rotation = defolt; // またはデフォルトの回転に固定
     }
 }

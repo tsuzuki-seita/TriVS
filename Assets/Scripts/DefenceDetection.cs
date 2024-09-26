@@ -23,6 +23,8 @@ public class DefenceDetection : MonoBehaviour
                     {
                         playerController.animator.SetBool("IsStun", true);
                         playerController.isStun = true;
+                        //playerAgent.animator.SetBool("IsStun", true);
+                        //playerAgent.isStun = true;
                         Invoke("RemoveStun", 1);
                     }
                     break;
@@ -32,6 +34,8 @@ public class DefenceDetection : MonoBehaviour
                     {
                         playerController.animator.SetBool("IsStun", true);
                         playerController.isStun = true;
+                        //playerAgent.animator.SetBool("IsStun", true);
+                        //playerAgent.isStun = true;
                         Invoke("RemoveStun", 1);
                     }
                     break;
@@ -41,6 +45,8 @@ public class DefenceDetection : MonoBehaviour
                     {
                         playerController.animator.SetBool("IsStun", true);
                         playerController.isStun = true;
+                        //playerAgent.animator.SetBool("IsStun", true);
+                        //playerAgent.isStun = true;
                         Invoke("RemoveStun", 1);
                     }
                     break;
@@ -57,5 +63,7 @@ public class DefenceDetection : MonoBehaviour
     {
         playerController.animator.SetBool("IsStun", false);
         playerController.isStun = false;
+        //playerAgent.animator.SetBool("IsStun", false);
+        //playerAgent.isStun = false;
     }
 }

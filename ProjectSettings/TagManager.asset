@@ -7,6 +7,12 @@ TagManager:
   - Orb
   - Projectile
   - EProjectile
+  - Orbs
+  - Enemy
+  - WaterAura
+  - BurnAura
+  - LightAura
+  - Wall
   layers:
   - Default
   - TransparentFX

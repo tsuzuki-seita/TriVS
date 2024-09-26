@@ -12,8 +12,6 @@ public class PlayerController : MonoBehaviour
     public float attackCooldown = 0.5f;
     private float lastAttackTime = 0;
 
-    public int maxGauge = 50;
-    int currentGauge;
     public int gaugeCost = 10; // 属性切り替えと攻撃に消費するゲージ量
 
     public Animator animator;
@@ -55,7 +53,6 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && attributeSwitcher.currentGauge >= gaugeCost)
         {
             attributeSwitcher.SwitchAttribute();
-            attributeSwitcher.currentGauge -= gaugeCost; // 属性切り替え時にゲージを消費
             attributeSwitcher.UpdateGaugeUI();
         }
 

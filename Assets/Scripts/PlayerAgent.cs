@@ -12,12 +12,13 @@ public class PlayerAgent : Agent
     public float attackRange = 2f;
     public Transform attackSpawnPoint;
     public AttributeSwitcher attributeSwitcher;
+    public GameObject Orbs;
+    public GameObject Stage;
+
     public float attackCooldown = 0.5f;
     private float lastAttackTime = 0;
 
-    public int maxGauge = 50;
     public int maxHP = 100; // エージェントの最大HP
-    private int currentHP; // 現在のHP
     public int gaugeCost = 10;
 
     public Animator animator;
@@ -29,11 +30,14 @@ public class PlayerAgent : Agent
     public GameObject attackPrefab01;
     public GameObject attackPrefab02;
     public GameObject Defence;
+    public GameObject PlayerSpawn;
+    public GameObject EnemySpawn;
+
     float _input_x;
     float _input_z;
 
     // 他のエージェントへの参照
-    public PlayerAgent opponentAgent;
+    //public PlayerAgent opponentAgent;
 
     private void Start()
     {
@@ -45,6 +49,8 @@ public class PlayerAgent : Agent
     // エージェントの初期化時に呼ばれる関数
     public override void Initialize()
     {
+        animator = GetComponent<Animator>();
+        Defence.SetActive(false);
         base.Initialize();
     }
 
@@ -53,9 +59,14 @@ public class PlayerAgent : Agent
     {
         sensor.AddObservation(transform.position); // 自分の位置を観察
         sensor.AddObservation(attributeSwitcher.currentGauge); // ゲージの状態を観察
-        sensor.AddObservation(currentHP); // 現在のHPを観察
+        sensor.AddObservation(attributeSwitcher.currentHP); // 現在のHPを観察
         sensor.AddObservation(isAttacking); // 攻撃状態かどうかを観察
         sensor.AddObservation(isDefence); // 防御状態かどうかを観察
+        //sensor.AddObservation(opponentAgent.transform.position); // 自分の位置を観察
+        //sensor.AddObservation(opponentAgent.attributeSwitcher.currentGauge); // ゲージの状態を観察
+        //sensor.AddObservation(opponentAgent.attributeSwitcher.currentHP); // 現在のHPを観察
+        //sensor.AddObservation(opponentAgent.isAttacking); // 攻撃状態かどうかを観察
+        //sensor.AddObservation(opponentAgent.isDefence); // 防御状態かどうかを観察
     }
 
     // エージェントの行動を実行する関数
@@ -68,19 +79,41 @@ public class PlayerAgent : Agent
         _input_x = continuousActions[0];
         _input_z = continuousActions[1];
 
-        Vector3 moveDirection = new Vector3(_input_x, 0, _input_z).normalized;
-        transform.position += moveDirection * moveSpeed * Time.deltaTime;
+        //移動の向きなど座標関連はVector3で扱う
+        Vector3 velocity = new Vector3(_input_x, 0, _input_z);
+        //ベクトルの向きを取得
+        Vector3 direction = velocity.normalized;
 
-        // 2. 属性切り替え (スペースキーに対応)
-        if (discreteActions[0] == 1 && attributeSwitcher.currentGauge >= gaugeCost)
+        //移動距離を計算
+        float distance = moveSpeed * Time.deltaTime;
+        //移動先を計算
+        Vector3 destination = transform.position + direction * distance;
+
+        //移動先に向けて回転
+        transform.LookAt(destination);
+        //移動先の座標を設定
+        transform.position = destination;
+
+        // 移動アニメーションの制御
+        if (velocity != Vector3.zero)
         {
-            attributeSwitcher.SwitchAttribute();
-            attributeSwitcher.currentGauge -= gaugeCost;
-            attributeSwitcher.UpdateGaugeUI();
+            animator.SetBool("IsWalking", true);
+        }
+        else
+        {
+            animator.SetBool("IsWalking", false);
         }
 
-        // 3. 攻撃 (マウス左クリックに対応)
-        if (discreteActions[1] == 1 && Time.time - lastAttackTime > attackCooldown && attributeSwitcher.currentGauge >= gaugeCost)
+        // 2. 属性切り替え (スペースキーに対応) 
+        if (discreteActions[0] == 1 && attributeSwitcher.currentGauge >= gaugeCost && Time.time - lastAttackTime > attackCooldown)
+        {
+            attributeSwitcher.SwitchAttribute();
+            attributeSwitcher.UpdateGaugeUI();
+            lastAttackTime = Time.time;
+        }
+
+        // 3. 攻撃 (マウス左クリックに対応) 
+        if (discreteActions[1] == 1 && attributeSwitcher.currentGauge >= gaugeCost && Time.time - lastAttackTime > attackCooldown)
         {
             Attack();
         }
@@ -99,8 +132,6 @@ public class PlayerAgent : Agent
             Defence.SetActive(false);
         }
 
-        // エージェントがフィールド外に出た場合やHPが0になった場合にリセットする
-        CheckAgentState();
     }
 
     // エージェントがヒューマンプレイヤーのように操作する場合の定義
@@ -111,8 +142,8 @@ public class PlayerAgent : Agent
         continuousActions[1] = Input.GetAxis("Vertical");   // 縦方向の移動入力
 
         var discreteActions = actionsOut.DiscreteActions;
-        discreteActions[0] = Input.GetKeyDown(KeyCode.Space) ? 1 : 0; // スペースキーの入力 (属性切替)
-        discreteActions[1] = Input.GetMouseButtonDown(0) ? 1 : 0;     // マウス左クリック (攻撃)
+        discreteActions[0] = Input.GetKey(KeyCode.Space) ? 1 : 0; // スペースキーの入力 (属性切替)
+        discreteActions[1] = Input.GetMouseButton(0) ? 1 : 0;     // マウス左クリック (攻撃)
         discreteActions[2] = Input.GetMouseButton(1) ? 1 : 0;         // マウス右クリック (防御)
     }
 
@@ -120,8 +151,8 @@ public class PlayerAgent : Agent
     {
         _input_x = 0;
         _input_z = 0;
-        lastAttackTime = Time.time;
         isAttacking = true;
+        lastAttackTime = Time.time;
         attributeSwitcher.currentGauge -= gaugeCost;
         attributeSwitcher.UpdateGaugeUI();
 
@@ -179,67 +210,68 @@ public class PlayerAgent : Agent
     }
 
     // エージェントの状態をチェックしてリセット条件を確認する
-    private void CheckAgentState()
+    public void CheckAgentState()
     {
-        // HPが0以下になった場合
-        if (currentHP <= 0)
-        {
-            // HPが0になったエージェントに-1の報酬
-            SetReward(-1.0f);
+        // 勝利した相手のエージェントに+1の報酬
+        //if (opponentAgent != null)
+        //{
+        //    opponentAgent.SetReward(1.0f);
+        //    opponentAgent.ResetAgent();
+        //    opponentAgent.EndEpisode();
+        //}
+        //if(transform.position.y < 0)
+        //{
+        //    ResetAgent();
+        //    opponentAgent.ResetAgent();
+        //}
 
-            // 勝利した相手のエージェントに+1の報酬
-            if (opponentAgent != null)
-            {
-                opponentAgent.SetReward(1.0f);
-                opponentAgent.EndEpisode();
-            }
-
-            EndEpisode(); // 自エージェントのエピソードも終了
-        }
-
-        // y軸が0未満になった場合（フィールド外に出た場合）
-        if (transform.position.y < 0)
-        {
-            SetReward(-1.0f);
-
-            // 相手エージェントに勝利報酬
-            if (opponentAgent != null)
-            {
-                opponentAgent.SetReward(1.0f);
-                opponentAgent.EndEpisode();
-            }
-
-            EndEpisode(); // 自エージェントのエピソードも終了
-        }
-    }
-
-    // エージェントのHPにダメージを与える関数
-    public void TakeDamage(int damage)
-    {
-        currentHP -= damage;
-        if (currentHP <= 0)
-        {
-            currentHP = 0;
-            CheckAgentState();
-        }
+        Debug.Log("報酬獲得");
+        ResetAgent();
+        //opponentAgent.ResetAgent();
+        EndEpisode(); // 自エージェントのエピソードも終了
     }
 
     // エージェントのリセット処理
-    public override void OnEpisodeBegin()
-    {
-        ResetAgent();
-    }
+    //public override void OnEpisodeBegin()
+    //{
+    //    ResetAgent();
+    //    Debug.Log("リセット");
+    //}
 
     // エージェントの状態を初期化する関数
-    private void ResetAgent()
+    public void ResetAgent()
     {
-        currentHP = maxHP; // HPを初期化
-        attributeSwitcher.currentGauge = maxGauge; // ゲージを初期化
-        transform.position = new Vector3(0, 1, 0); // 初期位置にリセット
+        attributeSwitcher.currentHP = maxHP; // HPを初期化
+        attributeSwitcher.currentGauge = 0; // ゲージを初期化
+        attributeSwitcher.UpdateHpUI();
+        attributeSwitcher.UpdateGaugeUI();
+        attributeSwitcher.currentAttribute = AttributeSwitcher.Attribute.Fire;
         isAttacking = false;
         isDefence = false;
         comboStep = 0;
         Defence.SetActive(false);
         animator.SetBool("IsDefence", false);
+        animator.SetBool("IsWalking", false);
+        if (PlayerSpawn != null)
+        {
+            transform.position = PlayerSpawn.transform.position;
+            transform.rotation = PlayerSpawn.transform.rotation;
+        }
+        if (EnemySpawn != null)
+        {
+            transform.position = EnemySpawn.transform.position;
+            transform.rotation = EnemySpawn.transform.rotation;
+        }
+        // タグがorbTagであるすべてのオブジェクトを取得
+        GameObject[] existingOrbs = GameObject.FindGameObjectsWithTag("Orbs");
+        // すべてのオブジェクトを削除
+        foreach (GameObject orb in existingOrbs)
+        {
+            Destroy(orb);
+        }
+        if (Orbs != null)
+        {
+            Instantiate(Orbs, Stage.transform);
+        }
     }
 }

@@ -18,6 +18,7 @@ public class AttributeSwitcher : MonoBehaviour
     public GameObject lightningObject; // Grass属性のオブジェクト
 
     public PlayerController playerController;
+    public PlayerAgent playerAgent;
 
     public int maxHP = 100;
     public int currentHP;
@@ -55,7 +56,6 @@ public class AttributeSwitcher : MonoBehaviour
                     currentAttribute = Attribute.Fire;
                     break;
             }
-            Debug.Log("Attribute switched to " + currentAttribute.ToString());
             UpdateAttributeVisibility(); // 属性切り替え時に表示を更新
         }
         else
@@ -70,7 +70,6 @@ public class AttributeSwitcher : MonoBehaviour
         currentGauge = Mathf.Min(currentGauge + amount, maxGauge);
         gaugeBar.value = currentGauge / maxGauge;
         UpdateGaugeUI();
-        Debug.Log("Gauge: " + currentGauge);
     }
 
     // 各属性に応じてオブジェクトの表示を更新
@@ -123,8 +122,14 @@ public class AttributeSwitcher : MonoBehaviour
                 break;
         }
 
-        playerController.animator.SetTrigger("Damage");
-        Debug.Log("Damage taken: " + finalDamage);
+        if (playerController != null)
+        {
+            playerController.animator.SetTrigger("Damage");
+        }
+        if(playerAgent != null)
+        {
+            playerAgent.animator.SetTrigger("Damage");
+        } 
         currentHP -= finalDamage;
         UpdateHpUI();
         if (currentHP <= 0)
