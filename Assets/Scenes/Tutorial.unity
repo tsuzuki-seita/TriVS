@@ -2601,6 +2601,8 @@ MonoBehaviour:
   lightningObject: {fileID: 1019742004}
   playerController: {fileID: 0}
   playerAgent: {fileID: 0}
+  gameManager: {fileID: 0}
+  animator: {fileID: 0}
   maxHP: 100
   currentHP: 0
   hpBar: {fileID: 399286018}
@@ -3674,6 +3676,8 @@ MonoBehaviour:
   lightningObject: {fileID: 1894804823}
   playerController: {fileID: 2124393749}
   playerAgent: {fileID: 0}
+  gameManager: {fileID: 0}
+  animator: {fileID: 0}
   maxHP: 100
   currentHP: 100
   hpBar: {fileID: 135458068}
