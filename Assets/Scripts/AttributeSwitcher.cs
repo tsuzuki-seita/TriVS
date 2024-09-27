@@ -20,6 +20,9 @@ public class AttributeSwitcher : MonoBehaviour
     public PlayerController playerController;
     public PlayerAgent playerAgent;
 
+    public GameManager gameManager;
+    public Animator animator;
+
     public int maxHP = 100;
     public int currentHP;
 
@@ -136,6 +139,18 @@ public class AttributeSwitcher : MonoBehaviour
         {
             // ゲームオーバー処理
             Debug.Log("Player is dead!");
+            if(this.gameObject.tag == "Player")
+            {
+                playerController.enabled = false;
+                animator.SetBool("IsDie", true);
+                gameManager.PlayerLose();
+            }
+            else if(this.gameObject.tag == "Enemy")
+            {
+                playerAgent.enabled = false;
+                animator.SetBool("IsDie", true);
+                gameManager.PlayerWin();
+            }
         }
     }
 
